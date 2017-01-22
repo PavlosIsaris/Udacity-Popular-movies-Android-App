@@ -40,21 +40,20 @@ public final class NetworkUtils {
 
     private static final String BASE_URL = MOVIES_DB_URL;
 
-    final static String SORT_BY_PARAM = "sort_by";
     final static String API_KEY_PARAM = "api_key";
     final static String LANGUAGE_PARAM = "language";
 
     /**
      * Builds the URL used to talk to the movies server using a sort by term.
      *
-     * @param sortByTerm The term that will be queried for (popularity or rating).
+     * @param subPath The term that will be queried for (popularity or rating).
      * @return The URL to use to query the movies server.
      */
-    public static URL buildUrl(String sortByTerm) {
+    public static URL buildUrl(String subPath) {
         //read the api key from a config declared in build.gradle file
         String apiKey = BuildConfig.THE_MOVIE_DB_API_TOKEN;
         Uri builtUri = Uri.parse(BASE_URL).buildUpon()
-                .appendEncodedPath(sortByTerm)
+                .appendEncodedPath(subPath)
                 .appendQueryParameter(LANGUAGE_PARAM, "en")
                 .appendQueryParameter(API_KEY_PARAM, apiKey)
                 .build();
