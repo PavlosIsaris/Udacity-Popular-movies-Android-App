@@ -51,6 +51,7 @@ public final class NetworkUtils {
      * @return The URL to use to query the movies server.
      */
     public static URL buildUrl(String sortByTerm) {
+        //read the api key from a config declared in build.gradle file
         String apiKey = BuildConfig.THE_MOVIE_DB_API_TOKEN;
         Uri builtUri = Uri.parse(BASE_URL).buildUpon()
                 .appendEncodedPath(sortByTerm)
