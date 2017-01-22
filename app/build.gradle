@@ -16,6 +16,9 @@ android {
         release {
             minifyEnabled false
         }
+        buildTypes.each {
+            it.buildConfigField 'String', "THE_MOVIE_DB_API_TOKEN", "\"" + System.getenv("THE_MOVIE_DB_API_TOKEN") + "\""
+        }
     }
     repositories {
         mavenCentral()

@@ -18,6 +18,8 @@ package com.example.android.movies.utilities;
 import android.net.Uri;
 import android.util.Log;
 
+import com.example.android.movies.BuildConfig;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -49,10 +51,11 @@ public final class NetworkUtils {
      * @return The URL to use to query the movies server.
      */
     public static URL buildUrl(String sortByTerm) {
+        String apiKey = BuildConfig.THE_MOVIE_DB_API_TOKEN;
         Uri builtUri = Uri.parse(BASE_URL).buildUpon()
                 .appendEncodedPath(sortByTerm)
                 .appendQueryParameter(LANGUAGE_PARAM, "en")
-                .appendQueryParameter(API_KEY_PARAM, "d3e8d0919b07c3c2ec9f6f3982a0b270")
+                .appendQueryParameter(API_KEY_PARAM, apiKey)
                 .build();
 
         URL url = null;
