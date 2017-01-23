@@ -3,6 +3,8 @@ package com.example.android.movies.models;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+import com.example.android.movies.utilities.DateUtils;
+
 /**
  * Class describing a movie object
  */
@@ -56,13 +58,14 @@ public class Movie implements Parcelable {
 
     //default movie constructor
     public Movie(int id, String title, String posterPathUrl, String originalTitle, String synopsis, String userRating, String releaseDate) {
+        DateUtils dateUtils = new DateUtils();
         this.id = id;
         this.title = title;
         this.posterPathUrl = posterPathUrl;
         this.originalTitle = originalTitle;
         this.synopsis = synopsis;
         this.userRating = userRating;
-        this.releaseDate = releaseDate;
+        this.releaseDate = dateUtils.getYearFromStringDate(releaseDate);
     }
 
     protected Movie(Parcel in) {
