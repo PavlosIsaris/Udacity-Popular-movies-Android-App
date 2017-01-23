@@ -47,10 +47,14 @@ public final class TheMovieDBJsonUtils {
         /* Weather information. Each day's settings info is an element of the "list" array */
         final String MOVIE_LIST = "results";
 
-        /* All temperatures are children of the "temp" object */
+        final String MOVIE_ID = "id";
         final String MOVIE_TITLE = "title";
         final String MOVIE_POSTER_PATH = "poster_path";
-        final String MOVIE_ID = "id";
+        final String MOVIE_ORIGINAL_TITLE = "original_title";
+        final String MOVIE_SYNOPSIS = "overview";
+        final String MOVIE_USER_RATING = "vote_average";
+        final String MOVIE_RELEASE_DATE = "release_date";
+
         /* String array to hold each day's weather String */
         List<Movie> parsedMovieData;
 
@@ -65,11 +69,15 @@ public final class TheMovieDBJsonUtils {
             /* Get the JSON object representing the current movie */
             JSONObject movieJSONObj = movieArray.getJSONObject(i);
 
+            int movieId = movieJSONObj.getInt(MOVIE_ID);
             String movieTitle = movieJSONObj.getString(MOVIE_TITLE);
             String moviePosterPath = movieJSONObj.getString(MOVIE_POSTER_PATH);
-            int movieId = movieJSONObj.getInt(MOVIE_ID);
+            String movieOriginalTitle = movieJSONObj.getString(MOVIE_ORIGINAL_TITLE);
+            String movieSynopsis = movieJSONObj.getString(MOVIE_SYNOPSIS);
+            String movieUserRating = movieJSONObj.getString(MOVIE_USER_RATING);
+            String movieReleaseDate = movieJSONObj.getString(MOVIE_RELEASE_DATE);
             //add to the data list a new Movie instance
-            parsedMovieData.add(i, new Movie(movieId, movieTitle, moviePosterPath));
+            parsedMovieData.add(i, new Movie(movieId, movieTitle, moviePosterPath, movieOriginalTitle, movieSynopsis, movieUserRating, movieReleaseDate));
         }
 
         return parsedMovieData;

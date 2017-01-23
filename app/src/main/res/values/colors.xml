@@ -18,4 +18,6 @@
     <color name="colorPrimary">#212121</color>
     <color name="colorPrimaryDark">#000000</color>
     <color name="colorAccent">#bbbbbb</color>
+    <color name="movieDetailTitleBackground">#009688</color>
+    <color name="movieDetailTitleTextColor">#ffffff</color>
 </resources>

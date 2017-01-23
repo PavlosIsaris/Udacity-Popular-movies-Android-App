@@ -61,11 +61,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         /* This TextView is used to display errors and will be hidden if there are no errors */
         mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
 
-        /*
-         * LinearLayoutManager can support HORIZONTAL or VERTICAL orientations. The reverse layout
-         * parameter is useful mostly for HORIZONTAL layouts that should reverse for right to left
-         * languages.
-         */
         GridLayoutManager layoutManager
                 = new GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false);
 
