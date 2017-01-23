@@ -1,10 +1,13 @@
 package com.example.android.movies.models;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 /**
  * Class describing a movie object
  */
 
-public class Movie {
+public class Movie implements Parcelable {
     // id of the movie
     private int id;
     //title of the movie
@@ -33,4 +36,34 @@ public class Movie {
         this.title = title;
         this.posterPathUrl = posterPathUrl;
     }
+
+    protected Movie(Parcel in) {
+        id = in.readInt();
+        title = in.readString();
+        posterPathUrl = in.readString();
+    }
+
+    @Override
+    public int describeContents() {
+        return 0;
+    }
+
+    @Override
+    public void writeToParcel(Parcel parcel, int i) {
+        parcel.writeInt(this.id);
+        parcel.writeString(this.title);
+        parcel.writeString(this.posterPathUrl);
+    }
+
+    public static final Creator<Movie> CREATOR = new Creator<Movie>() {
+        @Override
+        public Movie createFromParcel(Parcel in) {
+            return new Movie(in);
+        }
+
+        @Override
+        public Movie[] newArray(int size) {
+            return new Movie[size];
+        }
+    };
 }

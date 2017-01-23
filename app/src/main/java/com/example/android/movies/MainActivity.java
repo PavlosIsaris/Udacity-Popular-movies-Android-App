@@ -113,14 +113,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
      * This method is overridden by our MainActivity class in order to handle RecyclerView item
      * clicks.
      *
-     * @param weatherForDay The weather for the day that was clicked
+     * @param selectedMovie The movie id of the movie item that was selected
      */
     @Override
-    public void onClick(String weatherForDay) {
+    public void onClick(Movie selectedMovie) {
         Context context = this;
-        // COMPLETED (3) Remove the Toast and launch the DetailActivity using an explicit Intent
         Class destinationClass = DetailActivity.class;
         Intent intentToStartDetailActivity = new Intent(context, destinationClass);
+        intentToStartDetailActivity.putExtra("selectedMovie", selectedMovie);
         startActivity(intentToStartDetailActivity);
     }
 
