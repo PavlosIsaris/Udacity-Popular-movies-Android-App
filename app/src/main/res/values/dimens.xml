@@ -16,4 +16,8 @@
     <dimen name="movie_detail_synopsis_margin_bottom">5dp</dimen>
     <dimen name="movie_detail_synopsis_margin_left">20dp</dimen>
     <dimen name="movie_detail_synopsis_border_margin_bottom">10dp</dimen>
+    <dimen name="main_activity_error_msg_padding">16dp</dimen>
+    <dimen name="main_activity_error_msg_text_size">20sp</dimen>
+    <dimen name="main_activity_progress_bar_height">42dp</dimen>
+    <dimen name="main_activity_progress_bar_width">42dp</dimen>
 </resources>
