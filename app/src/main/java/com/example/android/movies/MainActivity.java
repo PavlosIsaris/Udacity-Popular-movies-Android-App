@@ -31,6 +31,8 @@ import android.widget.TextView;
 
 import com.example.android.movies.MovieAdapter.MovieAdapterOnClickHandler;
 import com.example.android.movies.models.Movie;
+import com.example.android.movies.tasks.AsyncTaskCompleteListener;
+import com.example.android.movies.tasks.FetchMoviesTask;
 import com.example.android.movies.utilities.NetworkUtils;
 import com.example.android.movies.utilities.TheMovieDBJsonUtils;
 
@@ -101,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
      */
     private void loadMoviesData(String sortByTerm) {
         showMoviesDataView();
-        new FetchMoviesTask().execute(sortByTerm);
+        new FetchMoviesTask(this, new FetchMyDataTaskCompleteListener()).execute(sortByTerm);
     }
 
     /**
@@ -147,42 +149,9 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
 
-    public class FetchMoviesTask extends AsyncTask<String, Void, List<Movie>> {
-
+    public class FetchMyDataTaskCompleteListener implements AsyncTaskCompleteListener<List<Movie>> {
         @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            mLoadingIndicator.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected List<Movie> doInBackground(String... params) {
-
-            /* If there's no zip code, there's nothing to look up. */
-            if (params.length == 0) {
-                return null;
-            }
-
-            String sortByParameter = params[0];
-            URL movieRequestUrl = NetworkUtils.buildUrl(sortByParameter);
-
-            try {
-                String jsonMovieResponse = NetworkUtils
-                        .getResponseFromHttpUrl(movieRequestUrl);
-
-                ArrayList<Movie> simpleJsonMovieData = (ArrayList<Movie>) TheMovieDBJsonUtils
-                        .getMovieObjectsFromJson(MainActivity.this, jsonMovieResponse);
-
-                return simpleJsonMovieData;
-
-            } catch (Exception e) {
-                e.printStackTrace();
-                return null;
-            }
-        }
-
-        @Override
-        protected void onPostExecute(List<Movie> movieObjects) {
+        public void onTaskComplete(List<Movie> movieObjects) {
             mLoadingIndicator.setVisibility(View.INVISIBLE);
             if (movieObjects != null) {
                 showMoviesDataView();
@@ -191,7 +160,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
                 showErrorMessage();
             }
         }
+
+        @Override
+        public void onTaskInitialisation() {
+            mLoadingIndicator.setVisibility(View.VISIBLE);
+        }
     }
+
+
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
