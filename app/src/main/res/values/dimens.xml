@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="movie_detail_title_padding_top">40dp</dimen>
+    <dimen name="movie_detail_title_padding_bottom">40dp</dimen>
+    <dimen name="movie_detail_title_padding_left">20dp</dimen>
+    <dimen name="movie_detail_title_elevation">8dp</dimen>
+    <dimen name="movie_detail_title_text_size">35sp</dimen>
+    <dimen name="movie_detail_poster_margin_top">10dp</dimen>
+    <dimen name="movie_detail_poster_padding_left">30dp</dimen>
+    <dimen name="movie_detail_box_margin_top">15dp</dimen>
+    <dimen name="movie_detail_box_padding_left">30dp</dimen>
+    <dimen name="movie_detail_release_year_text_size">20sp</dimen>
+    <dimen name="movie_detail_user_rating_margin_top">5dp</dimen>
+    <dimen name="movie_detail_user_rating_text_size">12sp</dimen>
+    <dimen name="movie_detail_synopsis_margin_top">20dp</dimen>
+    <dimen name="movie_detail_synopsis_margin_bottom">5dp</dimen>
+    <dimen name="movie_detail_synopsis_margin_left">20dp</dimen>
+    <dimen name="movie_detail_synopsis_border_margin_bottom">10dp</dimen>
+</resources>

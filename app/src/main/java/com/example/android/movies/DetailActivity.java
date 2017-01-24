@@ -14,7 +14,6 @@ import com.squareup.picasso.Picasso;
  */
 public class DetailActivity extends AppCompatActivity {
 
-    private static final String FORECAST_SHARE_HASHTAG = " #SunshineApp";
     private TextView mMovieTitleTextView;
     private ImageView mMovieImageView;
     private TextView mMovieReleaseYearTextView;
@@ -36,10 +35,12 @@ public class DetailActivity extends AppCompatActivity {
         mMovieUserRating = (TextView) findViewById(R.id.tv_movie_user_rating);
         mMovieSynopsis = (TextView) findViewById(R.id.tv_movie_synopsis);
 
+        assert movie != null;
         mMovieTitleTextView.setText(movie.getOriginalTitle());
         Picasso.with(getApplicationContext()).load(NetworkUtils.MOVIES_POSTER_BASE_URL + "w185/" + movie.getPosterPathUrl()).into(mMovieImageView);
         mMovieReleaseYearTextView.setText(movie.getReleaseDate());
-        mMovieUserRating.setText(movie.getUserRating());
+        String userRatingFull = movie.getUserRating() + getString(R.string.divideByTenString);
+        mMovieUserRating.setText(userRatingFull);
         mMovieSynopsis.setText(movie.getSynopsis());
     }
 }
