@@ -29,14 +29,12 @@ public class FetchMoviesTask extends AsyncTask<String, Void, List<Movie>> {
 
     @Override
     protected List<Movie> doInBackground(String... params) {
-
-            /* If there's no zip code, there's nothing to look up. */
         if (params.length == 0) {
             return null;
         }
 
         String sortByParameter = params[0];
-        URL movieRequestUrl = NetworkUtils.buildUrl(sortByParameter);
+        URL movieRequestUrl = NetworkUtils.buildMoviesUrl(sortByParameter);
 
         try {
             String jsonMovieResponse = NetworkUtils

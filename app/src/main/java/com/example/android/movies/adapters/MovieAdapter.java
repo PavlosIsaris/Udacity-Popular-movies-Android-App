@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.android.movies;
+package com.example.android.movies.adapters;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
@@ -23,6 +23,7 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 
+import com.example.android.movies.R;
 import com.example.android.movies.models.Movie;
 import com.example.android.movies.utilities.NetworkUtils;
 import com.squareup.picasso.Picasso;
@@ -69,7 +70,6 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
 
         public MovieAdapterViewHolder(View view) {
             super(view);
-//            mMovieTextView = (TextView) view.findViewById(R.id.tv_weather_data);
             mMovieImageView = (ImageView) view.findViewById(R.id.im_movie_poster);
             view.setOnClickListener(this);
         }

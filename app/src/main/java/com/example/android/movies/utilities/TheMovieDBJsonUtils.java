@@ -18,6 +18,7 @@ package com.example.android.movies.utilities;
 import android.content.Context;
 
 import com.example.android.movies.models.Movie;
+import com.example.android.movies.models.Trailer;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -81,5 +82,41 @@ public final class TheMovieDBJsonUtils {
         }
 
         return parsedMovieData;
+    }
+
+    public static List<Trailer> getTrailerObjectsFromJson(Context context, String moviesJsonStr)
+            throws JSONException {
+
+        /* Weather information. Each day's settings info is an element of the "list" array */
+        final String MOVIE_LIST = "results";
+
+        final String TRAILER_ID = "id";
+        final String TRAILER_NAME = "name";
+        final String TRAILER_KEY = "key";
+        final String TRAILER_SITE = "site";
+
+        /* String array to hold each day's weather String */
+        List<Trailer> parsedTrailerData;
+
+        JSONObject trailerJson = new JSONObject(moviesJsonStr);
+
+        JSONArray trailerArray = trailerJson.getJSONArray(MOVIE_LIST);
+
+        parsedTrailerData = new ArrayList<>();
+
+        for (int i = 0; i < trailerArray.length(); i++) {
+
+            /* Get the JSON object representing the current movie */
+            JSONObject movieJSONObj = trailerArray.getJSONObject(i);
+
+            String trailerId = movieJSONObj.getString(TRAILER_ID);
+            String trailerName = movieJSONObj.getString(TRAILER_NAME);
+            String trailerKey = movieJSONObj.getString(TRAILER_KEY);
+            String trailerSite = movieJSONObj.getString(TRAILER_SITE);
+            //add to the data list a new Movie instance
+            parsedTrailerData.add(i, new Trailer(trailerId, trailerName, trailerKey, trailerSite));
+        }
+
+        return parsedTrailerData;
     }
 }

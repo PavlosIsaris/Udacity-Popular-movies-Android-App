@@ -49,10 +49,32 @@ public final class NetworkUtils {
      * @param subPath The term that will be queried for (popularity or rating).
      * @return The URL to use to query the movies server.
      */
-    public static URL buildUrl(String subPath) {
+    public static URL buildMoviesUrl(String subPath) {
         //read the api key from a config declared in build.gradle file
         String apiKey = BuildConfig.THE_MOVIE_DB_API_TOKEN;
         Uri builtUri = Uri.parse(BASE_URL).buildUpon()
+                .appendEncodedPath(subPath)
+                .appendQueryParameter(LANGUAGE_PARAM, "en")
+                .appendQueryParameter(API_KEY_PARAM, apiKey)
+                .build();
+
+        URL url = null;
+        try {
+            url = new URL(builtUri.toString());
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        Log.v(TAG, "Built URI " + url);
+
+        return url;
+    }
+
+    public static URL buildMovieDetailsUrl(String subPath, int movieId) {
+        //read the api key from a config declared in build.gradle file
+        String apiKey = BuildConfig.THE_MOVIE_DB_API_TOKEN;
+        Uri builtUri = Uri.parse(BASE_URL).buildUpon()
+                .appendEncodedPath(String.valueOf(movieId))
                 .appendEncodedPath(subPath)
                 .appendQueryParameter(LANGUAGE_PARAM, "en")
                 .appendQueryParameter(API_KEY_PARAM, apiKey)

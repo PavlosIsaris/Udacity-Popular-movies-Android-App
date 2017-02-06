@@ -17,8 +17,10 @@ package com.example.android.movies;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -29,10 +31,9 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import com.example.android.movies.MovieAdapter.MovieAdapterOnClickHandler;
+import com.example.android.movies.adapters.MovieAdapter;
+import com.example.android.movies.adapters.MovieAdapter.MovieAdapterOnClickHandler;
 import com.example.android.movies.models.Movie;
-import com.example.android.movies.tasks.AsyncTaskCompleteListener;
-import com.example.android.movies.tasks.FetchMoviesTask;
 import com.example.android.movies.utilities.NetworkUtils;
 import com.example.android.movies.utilities.TheMovieDBJsonUtils;
 
@@ -40,7 +41,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements MovieAdapterOnClickHandler {
+public class MainActivity extends AppCompatActivity implements MovieAdapterOnClickHandler,
+        LoaderManager.LoaderCallbacks<List<Movie>> {
 
     private RecyclerView mRecyclerView;
     private MovieAdapter mMovieAdapter;
@@ -93,17 +95,41 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
         /* Once all of our views are setup, we can load the weather data. */
-        String sortByTermDefault = "popular";
-        loadMoviesData(sortByTermDefault);
+        loadMoviesData("popular");
     }
+
+    private static final int MOVIES_LOADER_ID = 0;
 
     /**
      * This method will get the user's preferred location for weather, and then tell some
      * background method to get the weather data in the background.
      */
     private void loadMoviesData(String sortByTerm) {
-        showMoviesDataView();
-        new FetchMoviesTask(this, new FetchMyDataTaskCompleteListener()).execute(sortByTerm);
+        int loaderId = MOVIES_LOADER_ID;
+
+        /*
+         * From MainActivity, we have implemented the LoaderCallbacks interface with the type of
+         * String array. (implements LoaderCallbacks<String[]>) The variable callback is passed
+         * to the call to initLoader below. This means that whenever the loaderManager has
+         * something to notify us of, it will do so through this callback.
+         */
+        LoaderManager.LoaderCallbacks<List<Movie>> callback = MainActivity.this;
+
+        /*
+         * The second parameter of the initLoader method below is a Bundle. Optionally, you can
+         * pass a Bundle to initLoader that you can then access from within the onCreateLoader
+         * callback. In our case, we don't actually use the Bundle, but it's here in case we wanted
+         * to.
+         */
+        Bundle bundleForLoader = new Bundle();
+        bundleForLoader.putString("sortByParam", sortByTerm);
+
+        /*
+         * Ensures a loader is initialized and active. If the loader doesn't already exist, one is
+         * created and (if the activity/fragment is currently started) starts the loader. Otherwise
+         * the last created loader is re-used.
+         */
+        getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callback);
     }
 
     /**
@@ -149,25 +175,86 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
 
-    public class FetchMyDataTaskCompleteListener implements AsyncTaskCompleteListener<List<Movie>> {
-        @Override
-        public void onTaskComplete(List<Movie> movieObjects) {
-            mLoadingIndicator.setVisibility(View.INVISIBLE);
-            if (movieObjects != null) {
-                showMoviesDataView();
-                mMovieAdapter.setMoviesData(movieObjects);
-            } else {
-                showErrorMessage();
-            }
-        }
+    @Override
+    public Loader<List<Movie>> onCreateLoader(int id, final Bundle args) {
+        return new AsyncTaskLoader<List<Movie>>(this) {
 
-        @Override
-        public void onTaskInitialisation() {
-            mLoadingIndicator.setVisibility(View.VISIBLE);
+            List<Movie> moviesData = null;
+            /**
+             * Subclasses of AsyncTaskLoader must implement this to take care of loading their data.
+             */
+            @Override
+            protected void onStartLoading() {
+                if (moviesData != null) {
+                    deliverResult(moviesData);
+                } else {
+                    mLoadingIndicator.setVisibility(View.VISIBLE);
+                    forceLoad();
+                }
+            }
+
+            /**
+             * This is the method of the AsyncTaskLoader that will load and parse the JSON data
+             * from OpenWeatherMap in the background.
+             *
+             * @return Weather data from OpenWeatherMap as an array of Strings.
+             *         null if an error occurs
+             */
+            @Override
+            public List<Movie> loadInBackground() {
+                String sortByParameter = "popular";
+
+                if(args.getString("sortByParam") != null)
+                    sortByParameter = args.getString("sortByParam");
+                try {
+                    URL movieRequestUrl = NetworkUtils.buildMoviesUrl(sortByParameter);
+
+                    try {
+                        String jsonMovieResponse = NetworkUtils
+                                .getResponseFromHttpUrl(movieRequestUrl);
+
+                        ArrayList<Movie> simpleJsonMovieData = (ArrayList<Movie>) TheMovieDBJsonUtils
+                                .getMovieObjectsFromJson(MainActivity.this, jsonMovieResponse);
+
+                        return simpleJsonMovieData;
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                        return null;
+                    }
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+
+            /**
+             * Sends the result of the load to the registered listener.
+             *
+             * @param data The result of the load
+             */
+            public void deliverResult(List<Movie> data) {
+                moviesData = data;
+                super.deliverResult(data);
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(Loader<List<Movie>> loader, List<Movie> data) {
+        mLoadingIndicator.setVisibility(View.INVISIBLE);
+        if (data != null) {
+            showMoviesDataView();
+            mMovieAdapter.setMoviesData(data);
+        } else {
+            showErrorMessage();
         }
     }
 
+    @Override
+    public void onLoaderReset(Loader<List<Movie>> loader) {
 
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -184,17 +271,29 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         int id = item.getItemId();
         String sortByTerm;
         if (id == R.id.action_sort_by_popularity) {
-            mMovieAdapter.setMoviesData(null);
             sortByTerm = "popular";
-            loadMoviesData(sortByTerm);
-            return true;
+            return getDataByTerm(sortByTerm);
         } else if(id == R.id.action_sort_by_rating) {
-            mMovieAdapter.setMoviesData(null);
             sortByTerm = "top_rated";
-            loadMoviesData(sortByTerm);
-            return true;
+            return getDataByTerm(sortByTerm);
         }
-
         return super.onOptionsItemSelected(item);
     }
+
+    private boolean getDataByTerm(String sortByTerm) {
+        invalidateData();
+        Bundle bundleForLoader = new Bundle();
+        bundleForLoader.putString("sortByParam", sortByTerm);
+        getSupportLoaderManager().restartLoader(MOVIES_LOADER_ID, bundleForLoader, this);
+        return true;
+    }
+
+    /**
+     * This method is used when we are resetting data, so that at one point in time during a
+     * refresh of our data, you can see that there is no data showing.
+     */
+    private void invalidateData() {
+        mMovieAdapter.setMoviesData(null);
+    }
+
 }

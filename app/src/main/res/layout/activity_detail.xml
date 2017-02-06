@@ -76,6 +76,37 @@
                 android:background="@color/colorPrimaryDark"
                 android:layout_marginLeft="20sp"
                 android:layout_marginRight="20sp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/trailersTitle"
+                android:layout_marginTop="20dp"
+                android:paddingStart="20sp"
+                android:paddingLeft="20sp"/>
+
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/recyclerview_movie_trailers"
+                android:layout_width="match_parent"
+                android:layout_height="185dp"
+                android:layout_marginTop="10dp"
+                android:gravity="center"/>
+
+            <TextView
+                android:id="@+id/tv_trailers_error_message_display"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:padding="@dimen/main_activity_error_msg_padding"
+                android:text="@string/error_message"
+                android:textSize="@dimen/main_activity_error_msg_text_size"
+                android:visibility="invisible" />
+
+            <ProgressBar
+                android:id="@+id/pb_trailers_loading_indicator"
+                android:layout_height="@dimen/main_activity_progress_bar_height"
+                android:layout_width="@dimen/main_activity_progress_bar_width"
+                android:layout_gravity="center"
+                android:visibility="invisible" />
         </LinearLayout>
     </ScrollView>
 
