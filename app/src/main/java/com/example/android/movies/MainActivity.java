@@ -17,6 +17,8 @@ package com.example.android.movies;
 
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
 import android.support.v4.content.AsyncTaskLoader;
@@ -33,6 +35,8 @@ import android.widget.TextView;
 
 import com.example.android.movies.adapters.MovieAdapter;
 import com.example.android.movies.adapters.MovieAdapter.MovieAdapterOnClickHandler;
+import com.example.android.movies.db.MovieContract;
+import com.example.android.movies.db.MovieDbHelper;
 import com.example.android.movies.models.Movie;
 import com.example.android.movies.utilities.NetworkUtils;
 import com.example.android.movies.utilities.TheMovieDBJsonUtils;
@@ -50,6 +54,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
     private TextView mErrorMessageDisplay;
 
     private ProgressBar mLoadingIndicator;
+
+    private SQLiteDatabase mDb;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,6 +102,13 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
 
         /* Once all of our views are setup, we can load the weather data. */
         loadMoviesData("popular");
+
+        // Create a DB helper (this will create the DB if run for the first time)
+        MovieDbHelper dbHelper = new MovieDbHelper(this);
+
+        // Keep a reference to the mDb until paused or killed. Get a writable database
+        // because you will be adding restaurant customers
+        mDb = dbHelper.getReadableDatabase();
     }
 
     private static final int MOVIES_LOADER_ID = 0;
@@ -276,6 +289,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         } else if(id == R.id.action_sort_by_rating) {
             sortByTerm = "top_rated";
             return getDataByTerm(sortByTerm);
+        } else if(id == R.id.action_favorites) {
+            getFavoriteMoviesFromDB();
         }
         return super.onOptionsItemSelected(item);
     }
@@ -296,4 +311,41 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         mMovieAdapter.setMoviesData(null);
     }
 
+    public void getFavoriteMoviesFromDB() {
+        // Get all guest info from the database and save in a cursor
+        Cursor cursor = getAllMovies();
+        ArrayList<Movie> favoriteMovies = new ArrayList<Movie>();
+        cursor.moveToFirst();
+        while(!cursor.isAfterLast()) {
+            favoriteMovies.add(new Movie(
+                    cursor.getInt(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_MOVIE_ID)),
+                    cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_TITLE)),
+                    cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_POSTER_PATH_URL)),
+                    cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE)),
+                    cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_SYNOPSIS)),
+                    cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_USER_RATING)),
+                    cursor.getString(cursor.getColumnIndex(MovieContract.MovieEntry.COLUMN_RELEASE_DATE)))); //add the item
+            cursor.moveToNext();
+        }
+
+        // Link the adapter to the RecyclerView
+        mMovieAdapter.setMoviesData(favoriteMovies);
+    }
+
+    /**
+     * Query the mDb and get all guests from the waitlist table
+     *
+     * @return Cursor containing the list of guests
+     */
+    private Cursor getAllMovies() {
+        return mDb.query(
+                MovieContract.MovieEntry.TABLE_NAME,
+                null,
+                null,
+                null,
+                null,
+                null,
+                MovieContract.MovieEntry.COLUMN_TIMESTAMP
+        );
+    }
 }

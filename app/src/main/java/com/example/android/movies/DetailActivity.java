@@ -1,7 +1,9 @@
 package com.example.android.movies;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager;
@@ -10,11 +12,14 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import com.example.android.movies.adapters.TrailerAdapter;
+import com.example.android.movies.db.MovieContract;
+import com.example.android.movies.db.MovieDbHelper;
 import com.example.android.movies.loaders.AsyncTaskLoaderCompleteListener;
 import com.example.android.movies.loaders.TrailerLoader;
 import com.example.android.movies.models.Movie;
@@ -27,7 +32,7 @@ import java.util.List;
 /**
  * This Activity is responsible for the clicked movie's details screen
  */
-public class DetailActivity extends AppCompatActivity implements TrailerAdapter.TrailerAdapterOnClickHandler, LoaderManager.LoaderCallbacks<List<Trailer>>, AsyncTaskLoaderCompleteListener<List<Trailer>> {
+public class DetailActivity extends AppCompatActivity implements TrailerAdapter.TrailerAdapterOnClickHandler, LoaderManager.LoaderCallbacks<List<Trailer>>, AsyncTaskLoaderCompleteListener<List<Trailer>>, View.OnClickListener {
 
     private TextView mMovieTitleTextView;
     private ImageView mMovieImageView;
@@ -35,6 +40,9 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
     private TextView mMovieUserRating;
     private TextView mMovieSynopsis;
     private Movie mCurrentMovie;
+    private Button mFavoriteMovieBtn;
+
+    private SQLiteDatabase mDb;
 
     private TextView mErrorMessageDisplay;
 
@@ -57,6 +65,14 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         assert movie != null;
         this.setUpMovieDetails(movie);
         this.setUpMovieTrailersUI();
+        mFavoriteMovieBtn = (Button) findViewById(R.id.bt_movie_favorite);
+        mFavoriteMovieBtn.setOnClickListener(this);
+        // Create a DB helper (this will create the DB if run for the first time)
+        MovieDbHelper dbHelper = new MovieDbHelper(this);
+
+        // Keep a reference to the mDb until paused or killed. Get a writable database
+        // because you will be adding restaurant customers
+        mDb = dbHelper.getWritableDatabase();
     }
 
     private void setUpMovieDetails(Movie movie) {
@@ -175,5 +191,26 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
     public void onTaskInitialisation() {
         mRecyclerView.setVisibility(View.INVISIBLE);
         mLoadingIndicator.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void onClick(View view) {
+        switch(view.getId()) {
+            case R.id.bt_movie_favorite:
+                saveMovieToFavorites();
+                break;
+        }
+    }
+
+    private long saveMovieToFavorites() {
+        ContentValues cv = new ContentValues();
+        cv.put(MovieContract.MovieEntry.COLUMN_MOVIE_ID, mCurrentMovie.getId());
+        cv.put(MovieContract.MovieEntry.COLUMN_TITLE, mCurrentMovie.getTitle());
+        cv.put(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE, mCurrentMovie.getOriginalTitle());
+        cv.put(MovieContract.MovieEntry.COLUMN_SYNOPSIS, mCurrentMovie.getSynopsis());
+        cv.put(MovieContract.MovieEntry.COLUMN_USER_RATING, mCurrentMovie.getUserRating());
+        cv.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, mCurrentMovie.getReleaseDate());
+        cv.put(MovieContract.MovieEntry.COLUMN_POSTER_PATH_URL, mCurrentMovie.getPosterPathUrl());
+        return mDb.insert(MovieContract.MovieEntry.TABLE_NAME, null, cv);
     }
 }

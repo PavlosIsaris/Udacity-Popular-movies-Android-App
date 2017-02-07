@@ -134,6 +134,8 @@
     <string name="action_sort_by_rating">By rating</string>
     <string name="divideByTenString">/10</string>
     <string name="trailersTitle">Trailers:</string>
+    <string name="favoriteMovieBtnText">mark as favorite</string>
+    <string name="action_favorites">Favorites</string>
 
 
     <!-- - - - - - - - - - - -->
