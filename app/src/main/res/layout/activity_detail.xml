@@ -69,7 +69,8 @@
                         android:background="@color/movieDetailTitleBackground"
                         android:layout_marginTop="10dp"
                         android:paddingLeft="10dp"
-                        android:paddingRight="10dp"/>
+                        android:paddingRight="10dp"
+                        android:layout_marginRight="10dp"/>
                 </LinearLayout>
             </LinearLayout >
             <TextView

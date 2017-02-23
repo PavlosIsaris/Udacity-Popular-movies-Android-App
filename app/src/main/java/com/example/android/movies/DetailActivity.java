@@ -3,6 +3,7 @@ package com.example.android.movies;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Bundle;
@@ -16,6 +17,7 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.example.android.movies.adapters.TrailerAdapter;
 import com.example.android.movies.db.MovieContract;
@@ -53,9 +55,12 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
     private static final int TRAILERS_LOADER_ID = 1;
 
+    private boolean movieExistsInFavorites;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        initDB();
         setContentView(R.layout.activity_detail);
         //get the data from the intent's extras
         Bundle data = getIntent().getExtras();
@@ -63,10 +68,14 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         Movie movie = (Movie) data.getParcelable("selectedMovie");
         mCurrentMovie = movie;
         assert movie != null;
-        this.setUpMovieDetails(movie);
-        this.setUpMovieTrailersUI();
+
         mFavoriteMovieBtn = (Button) findViewById(R.id.bt_movie_favorite);
         mFavoriteMovieBtn.setOnClickListener(this);
+        this.setUpMovieDetails(movie);
+        this.setUpMovieTrailersUI();
+    }
+
+    private void initDB() {
         // Create a DB helper (this will create the DB if run for the first time)
         MovieDbHelper dbHelper = new MovieDbHelper(this);
 
@@ -91,6 +100,20 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         String userRatingFull = movie.getUserRating() + getString(R.string.divideByTenString);
         mMovieUserRating.setText(userRatingFull);
         mMovieSynopsis.setText(movie.getSynopsis());
+
+        setAppropriateFavoriteMovieBtnText();
+    }
+
+    private void setAppropriateFavoriteMovieBtnText() {
+        Cursor cursor = getMovieById(mCurrentMovie.getId());
+        //if the movie does not exist in the DB, the cursor is empty
+        if(cursor.getCount() == 0) {
+            movieExistsInFavorites = false;
+            mFavoriteMovieBtn.setText(R.string.favoriteMovieBtnText);
+        } else {
+            movieExistsInFavorites = true;
+            mFavoriteMovieBtn.setText(R.string.remove_from_favorites);
+        }
     }
 
     private void setUpMovieTrailersUI() {
@@ -129,7 +152,6 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
     @Override
     public void onClick(Trailer selectedTrailer) {
-        Context context = this;
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v=" + selectedTrailer.getKey())));
     }
 
@@ -197,7 +219,17 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
     public void onClick(View view) {
         switch(view.getId()) {
             case R.id.bt_movie_favorite:
-                saveMovieToFavorites();
+                String toastMessage;
+                if(movieExistsInFavorites) {
+                    removeMovieFromFavorites(mCurrentMovie.getId());
+                    toastMessage = "Removed from favorites";
+                    setAppropriateFavoriteMovieBtnText();
+                } else {
+                    saveMovieToFavorites();
+                    toastMessage = "Marked as favorite";
+                    setAppropriateFavoriteMovieBtnText();
+                }
+                Toast.makeText(getApplicationContext(), toastMessage, Toast.LENGTH_LONG).show();
                 break;
         }
     }
@@ -212,5 +244,37 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         cv.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, mCurrentMovie.getReleaseDate());
         cv.put(MovieContract.MovieEntry.COLUMN_POSTER_PATH_URL, mCurrentMovie.getPosterPathUrl());
         return mDb.insert(MovieContract.MovieEntry.TABLE_NAME, null, cv);
+    }
+
+    /**
+     * Removes the record with the specified id
+     *
+     * @param movieId the DB id to be removed (movie id)
+     * @return True: if removed successfully, False: if failed
+     */
+    private boolean removeMovieFromFavorites(int movieId) {
+        return mDb.delete(
+                MovieContract.MovieEntry.TABLE_NAME,
+                MovieContract.MovieEntry.COLUMN_MOVIE_ID + "=" + movieId,
+                null) > 0;
+    }
+
+    /**
+     * Query the mDb and get all guests from the waitlist table
+     *
+     * @return Cursor containing the list of guests
+     */
+    private Cursor getMovieById(int movieId) {
+        String where = MovieContract.MovieEntry.COLUMN_MOVIE_ID + " = ?";
+        String[] whereArgs = {String.valueOf(movieId)};
+        return mDb.query(
+                MovieContract.MovieEntry.TABLE_NAME,
+                null,
+                where,
+                whereArgs,
+                null,
+                null,
+                MovieContract.MovieEntry.COLUMN_TIMESTAMP
+        );
     }
 }

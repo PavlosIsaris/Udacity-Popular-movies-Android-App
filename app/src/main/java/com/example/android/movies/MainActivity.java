@@ -312,7 +312,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
     }
 
     public void getFavoriteMoviesFromDB() {
-        // Get all guest info from the database and save in a cursor
+        // Get all movie objects from the database and save in a cursor
         Cursor cursor = getAllMovies();
         ArrayList<Movie> favoriteMovies = new ArrayList<Movie>();
         cursor.moveToFirst();
