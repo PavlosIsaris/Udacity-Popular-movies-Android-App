@@ -338,14 +338,19 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
      * @return Cursor containing the list of guests
      */
     private Cursor getAllMovies() {
-        return mDb.query(
-                MovieContract.MovieEntry.TABLE_NAME,
+        return getContentResolver().query(MovieContract.MovieEntry.CONTENT_URI,
                 null,
                 null,
                 null,
-                null,
-                null,
-                MovieContract.MovieEntry.COLUMN_TIMESTAMP
-        );
+                MovieContract.MovieEntry.COLUMN_TIMESTAMP + " DESC");
+//        return mDb.query(
+//                MovieContract.MovieEntry.TABLE_NAME,
+//                null,
+//                null,
+//                null,
+//                null,
+//                null,
+//                MovieContract.MovieEntry.COLUMN_TIMESTAMP
+//        );
     }
 }

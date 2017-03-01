@@ -234,16 +234,19 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         }
     }
 
-    private long saveMovieToFavorites() {
-        ContentValues cv = new ContentValues();
-        cv.put(MovieContract.MovieEntry.COLUMN_MOVIE_ID, mCurrentMovie.getId());
-        cv.put(MovieContract.MovieEntry.COLUMN_TITLE, mCurrentMovie.getTitle());
-        cv.put(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE, mCurrentMovie.getOriginalTitle());
-        cv.put(MovieContract.MovieEntry.COLUMN_SYNOPSIS, mCurrentMovie.getSynopsis());
-        cv.put(MovieContract.MovieEntry.COLUMN_USER_RATING, mCurrentMovie.getUserRating());
-        cv.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, mCurrentMovie.getReleaseDate());
-        cv.put(MovieContract.MovieEntry.COLUMN_POSTER_PATH_URL, mCurrentMovie.getPosterPathUrl());
-        return mDb.insert(MovieContract.MovieEntry.TABLE_NAME, null, cv);
+    private boolean saveMovieToFavorites() {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put(MovieContract.MovieEntry.COLUMN_MOVIE_ID, mCurrentMovie.getId());
+        contentValues.put(MovieContract.MovieEntry.COLUMN_TITLE, mCurrentMovie.getTitle());
+        contentValues.put(MovieContract.MovieEntry.COLUMN_ORIGINAL_TITLE, mCurrentMovie.getOriginalTitle());
+        contentValues.put(MovieContract.MovieEntry.COLUMN_SYNOPSIS, mCurrentMovie.getSynopsis());
+        contentValues.put(MovieContract.MovieEntry.COLUMN_USER_RATING, mCurrentMovie.getUserRating());
+        contentValues.put(MovieContract.MovieEntry.COLUMN_RELEASE_DATE, mCurrentMovie.getReleaseDate());
+        contentValues.put(MovieContract.MovieEntry.COLUMN_POSTER_PATH_URL, mCurrentMovie.getPosterPathUrl());
+
+        Uri uri = getContentResolver().insert(MovieContract.MovieEntry.CONTENT_URI, contentValues);
+
+        return uri != null;
     }
 
     /**
@@ -252,11 +255,15 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
      * @param movieId the DB id to be removed (movie id)
      * @return True: if removed successfully, False: if failed
      */
-    private boolean removeMovieFromFavorites(int movieId) {
-        return mDb.delete(
-                MovieContract.MovieEntry.TABLE_NAME,
-                MovieContract.MovieEntry.COLUMN_MOVIE_ID + "=" + movieId,
-                null) > 0;
+    private void removeMovieFromFavorites(int movieId) {
+
+        // Build appropriate uri with String row id appended
+        String stringId = Integer.toString(movieId);
+        Uri uri = MovieContract.MovieEntry.CONTENT_URI;
+        uri = uri.buildUpon().appendPath(stringId).build();
+
+        // COMPLETED (2) Delete a single row of data using a ContentResolver
+        getContentResolver().delete(uri, null, null);
     }
 
     /**
@@ -265,16 +272,14 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
      * @return Cursor containing the list of guests
      */
     private Cursor getMovieById(int movieId) {
-        String where = MovieContract.MovieEntry.COLUMN_MOVIE_ID + " = ?";
-        String[] whereArgs = {String.valueOf(movieId)};
-        return mDb.query(
-                MovieContract.MovieEntry.TABLE_NAME,
-                null,
-                where,
-                whereArgs,
+        String stringId = Integer.toString(movieId);
+        Uri uri = MovieContract.MovieEntry.CONTENT_URI;
+        uri = uri.buildUpon().appendPath(stringId).build();
+
+        return getContentResolver().query(uri,
                 null,
                 null,
-                MovieContract.MovieEntry.COLUMN_TIMESTAMP
-        );
+                null,
+                null);
     }
 }
