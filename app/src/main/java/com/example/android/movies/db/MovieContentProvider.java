@@ -48,13 +48,13 @@ public class MovieContentProvider extends ContentProvider {
     }
 
     // Member variable for a TaskDbHelper that's initialized in the onCreate() method
-    private MovieDbHelper mMovieDbHelper;
+    private MovieDBHelper mMovieDBHelper;
 
 
     @Override
     public boolean onCreate() {
         Context context = getContext();
-        mMovieDbHelper = new MovieDbHelper(context);
+        mMovieDBHelper = new MovieDBHelper(context);
         return true;
     }
 
@@ -63,7 +63,7 @@ public class MovieContentProvider extends ContentProvider {
     public Cursor query(@NonNull Uri uri, String[] projection, String selection,
                         String[] selectionArgs, String sortOrder) {
         // Get access to underlying database (read-only for query)
-        final SQLiteDatabase db = mMovieDbHelper.getReadableDatabase();
+        final SQLiteDatabase db = mMovieDBHelper.getReadableDatabase();
 
         // Write URI match code and set a variable to return a Cursor
         int match = sUriMatcher.match(uri);
@@ -87,7 +87,7 @@ public class MovieContentProvider extends ContentProvider {
 
                 String[] selectionArguments = new String[]{movieId};
 
-                retCursor = mMovieDbHelper.getReadableDatabase().query(
+                retCursor = mMovieDBHelper.getReadableDatabase().query(
                         /* Table we are going to query */
                         MovieContract.MovieEntry.TABLE_NAME,
                         /*
@@ -136,7 +136,7 @@ public class MovieContentProvider extends ContentProvider {
     @Override
     public Uri insert(Uri uri, ContentValues contentValues) {
         // Get access to the task database (to write new data to)
-        final SQLiteDatabase db = mMovieDbHelper.getWritableDatabase();
+        final SQLiteDatabase db = mMovieDBHelper.getWritableDatabase();
 
         // Write URI matching code to identify the match for the tasks directory
         int match = sUriMatcher.match(uri);
@@ -168,7 +168,7 @@ public class MovieContentProvider extends ContentProvider {
 
     @Override
     public int delete(Uri uri, String s, String[] strings) {
-        final SQLiteDatabase db = mMovieDbHelper.getWritableDatabase();
+        final SQLiteDatabase db = mMovieDBHelper.getWritableDatabase();
 
         int match = sUriMatcher.match(uri);
         // Keep track of the number of deleted tasks

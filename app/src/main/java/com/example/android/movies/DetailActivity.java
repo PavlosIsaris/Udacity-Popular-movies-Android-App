@@ -22,7 +22,7 @@ import android.widget.Toast;
 import com.example.android.movies.adapters.ReviewAdapter;
 import com.example.android.movies.adapters.TrailerAdapter;
 import com.example.android.movies.db.MovieContract;
-import com.example.android.movies.db.MovieDbHelper;
+import com.example.android.movies.db.MovieDBHelper;
 import com.example.android.movies.loaders.AsyncTaskLoaderCompleteListener;
 import com.example.android.movies.loaders.ReviewLoader;
 import com.example.android.movies.loaders.TrailerLoader;
@@ -90,7 +90,7 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
     private void initDB() {
         // Create a DB helper (this will create the DB if run for the first time)
-        MovieDbHelper dbHelper = new MovieDbHelper(this);
+        MovieDBHelper dbHelper = new MovieDBHelper(this);
 
         // Keep a reference to the mDb until paused or killed. Get a writable database
         // because you will be adding restaurant customers

@@ -36,7 +36,7 @@ import android.widget.TextView;
 import com.example.android.movies.adapters.MovieAdapter;
 import com.example.android.movies.adapters.MovieAdapter.MovieAdapterOnClickHandler;
 import com.example.android.movies.db.MovieContract;
-import com.example.android.movies.db.MovieDbHelper;
+import com.example.android.movies.db.MovieDBHelper;
 import com.example.android.movies.models.Movie;
 import com.example.android.movies.utilities.NetworkUtils;
 import com.example.android.movies.utilities.TheMovieDBJsonUtils;
@@ -104,7 +104,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         loadMoviesData("popular");
 
         // Create a DB helper (this will create the DB if run for the first time)
-        MovieDbHelper dbHelper = new MovieDbHelper(this);
+        MovieDBHelper dbHelper = new MovieDBHelper(this);
 
         // Keep a reference to the mDb until paused or killed. Get a writable database
         // because you will be adding restaurant customers
