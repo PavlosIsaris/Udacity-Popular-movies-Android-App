@@ -32,4 +32,5 @@
     <string name="favoriteMovieBtnText">mark as favorite</string>
     <string name="action_favorites">Favorites</string>
     <string name="remove_from_favorites">Remove from favorites</string>
+    <string name="preference_movies_sort_term">moviesSortTerm</string>
 </resources>

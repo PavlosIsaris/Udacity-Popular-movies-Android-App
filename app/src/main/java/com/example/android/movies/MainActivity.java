@@ -17,6 +17,7 @@ package com.example.android.movies;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
@@ -64,9 +65,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
 
     private int currentScrollPosition = 0;
 
+    private Context mContext;
+
+    private String PREFERRED_MOVIE_SORT_NAME = "preferredMovieSortName";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mContext = this;
         setContentView(R.layout.activity_movies_list);
 
         /*
@@ -107,7 +113,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         mLoadingIndicator = (ProgressBar) findViewById(R.id.pb_loading_indicator);
 
         /* Once all of our views are setup, we can load the weather data. */
-        loadMoviesData("popular");
+        loadMoviesData(getPreferredMoviesSortTerm());
 
         // Create a DB helper (this will create the DB if run for the first time)
         MovieDBHelper dbHelper = new MovieDBHelper(this);
@@ -115,6 +121,12 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         // Keep a reference to the mDb until paused or killed. Get a writable database
         // because you will be adding restaurant customers
         mDb = dbHelper.getReadableDatabase();
+    }
+
+    private String getPreferredMoviesSortTerm() {
+        SharedPreferences sharedPref = mContext.getSharedPreferences(
+                getString(R.string.preference_movies_sort_term), Context.MODE_PRIVATE);
+        return sharedPref.getString(PREFERRED_MOVIE_SORT_NAME, "popular");
     }
 
     public static int calculateNoOfColumns(Context context) {
@@ -149,6 +161,12 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
      * background method to get the weather data in the background.
      */
     private void loadMoviesData(String sortByTerm) {
+
+        if(sortByTerm.equals("favorites")) {
+            getFavoriteMoviesFromDB();
+            return;
+        }
+
         int loaderId = MOVIES_LOADER_ID;
 
         /*
@@ -315,24 +333,43 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
-        String sortByTerm;
+        String sortByTerm = null;
         if (id == R.id.action_sort_by_popularity) {
             sortByTerm = "popular";
-            return getDataByTerm(sortByTerm);
+            saveToPreferences(sortByTerm);
+            return getDataByTerm();
         } else if(id == R.id.action_sort_by_rating) {
             sortByTerm = "top_rated";
-            return getDataByTerm(sortByTerm);
+            saveToPreferences(sortByTerm);
+            return getDataByTerm();
         } else if(id == R.id.action_favorites) {
+            sortByTerm = "favorites";
+            saveToPreferences(sortByTerm);
             getFavoriteMoviesFromDB();
         }
         return super.onOptionsItemSelected(item);
     }
 
-    private boolean getDataByTerm(String sortByTerm) {
-        invalidateData();
-        Bundle bundleForLoader = new Bundle();
-        bundleForLoader.putString("sortByParam", sortByTerm);
-        getSupportLoaderManager().restartLoader(MOVIES_LOADER_ID, bundleForLoader, this);
+    private void saveToPreferences(String movieSortPreference) {
+        SharedPreferences sharedPref = mContext.getSharedPreferences(
+                getString(R.string.preference_movies_sort_term), Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(PREFERRED_MOVIE_SORT_NAME, movieSortPreference);
+        editor.commit();
+    }
+
+    private boolean getDataByTerm() {
+        String sortByTerm = getPreferredMoviesSortTerm();
+        if (sortByTerm.equals("favourite")) {
+            getFavoriteMoviesFromDB();
+            return true;
+        }
+        else {
+            invalidateData();
+            Bundle bundleForLoader = new Bundle();
+            bundleForLoader.putString("sortByParam", sortByTerm);
+            getSupportLoaderManager().restartLoader(MOVIES_LOADER_ID, bundleForLoader, this);
+        }
         return true;
     }
 
