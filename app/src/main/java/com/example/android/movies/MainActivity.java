@@ -26,6 +26,7 @@ import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.DisplayMetrics;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -48,7 +49,7 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity implements MovieAdapterOnClickHandler,
         LoaderManager.LoaderCallbacks<List<Movie>> {
 
-    private RecyclerView mRecyclerView;
+    private RecyclerView mMoviesRecyclerView;
     private MovieAdapter mMovieAdapter;
 
     private TextView mErrorMessageDisplay;
@@ -56,6 +57,12 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
     private ProgressBar mLoadingIndicator;
 
     private SQLiteDatabase mDb;
+
+    private GridLayoutManager moviesGridLayoutManager;
+
+    private String CURRENT_SCROLL_POSITION = "CURRENT_SCROLL_POSITION";
+
+    private int currentScrollPosition = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,21 +73,20 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
          * Using findViewById, we get a reference to our RecyclerView from xml. This allows us to
          * do things like set the adapter of the RecyclerView and toggle the visibility.
          */
-        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_forecast);
+        mMoviesRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_forecast);
 
         /* This TextView is used to display errors and will be hidden if there are no errors */
         mErrorMessageDisplay = (TextView) findViewById(R.id.tv_error_message_display);
 
-        GridLayoutManager layoutManager
-                = new GridLayoutManager(this, 2, GridLayoutManager.VERTICAL, false);
+        moviesGridLayoutManager = new GridLayoutManager(this, calculateNoOfColumns(this), GridLayoutManager.VERTICAL, false);
 
-        mRecyclerView.setLayoutManager(layoutManager);
+        mMoviesRecyclerView.setLayoutManager(moviesGridLayoutManager);
 
         /*
          * Use this setting to improve performance if you know that changes in content do not
          * change the child layout size in the RecyclerView
          */
-        mRecyclerView.setHasFixedSize(true);
+        mMoviesRecyclerView.setHasFixedSize(true);
 
         /*
          * The MovieAdapter is responsible for linking our weather data with the Views that
@@ -89,7 +95,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         mMovieAdapter = new MovieAdapter(this);
 
         /* Setting the adapter attaches it to the RecyclerView in our layout. */
-        mRecyclerView.setAdapter(mMovieAdapter);
+        mMoviesRecyclerView.setAdapter(mMovieAdapter);
 
         /*
          * The ProgressBar that will indicate to the user that we are loading data. It will be
@@ -109,6 +115,31 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         // Keep a reference to the mDb until paused or killed. Get a writable database
         // because you will be adding restaurant customers
         mDb = dbHelper.getReadableDatabase();
+    }
+
+    public static int calculateNoOfColumns(Context context) {
+        DisplayMetrics displayMetrics = context.getResources().getDisplayMetrics();
+        float dpWidth = displayMetrics.widthPixels / displayMetrics.density;
+        int noOfColumns = (int) (dpWidth / 180);
+        return noOfColumns;
+    }
+
+    // Save the scroll position
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        System.out.println("onSaveInstanceState");
+        outState.putInt(CURRENT_SCROLL_POSITION, moviesGridLayoutManager.findFirstVisibleItemPosition());
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        System.out.println("onRestoreInstanceState");
+        if (savedInstanceState != null) {
+            currentScrollPosition = savedInstanceState.getInt(CURRENT_SCROLL_POSITION, 0);
+            mMoviesRecyclerView.smoothScrollToPosition(currentScrollPosition);
+        }
     }
 
     private static final int MOVIES_LOADER_ID = 0;
@@ -171,7 +202,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         /* First, make sure the error is invisible */
         mErrorMessageDisplay.setVisibility(View.INVISIBLE);
         /* Then, make sure the weather data is visible */
-        mRecyclerView.setVisibility(View.VISIBLE);
+        mMoviesRecyclerView.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -183,7 +214,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
      */
     private void showErrorMessage() {
         /* First, hide the currently visible data */
-        mRecyclerView.setVisibility(View.INVISIBLE);
+        mMoviesRecyclerView.setVisibility(View.INVISIBLE);
         /* Then, show the error */
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
@@ -259,6 +290,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
         if (data != null) {
             showMoviesDataView();
             mMovieAdapter.setMoviesData(data);
+            // Scroll back to previous position
+            mMoviesRecyclerView.smoothScrollToPosition(currentScrollPosition);
         } else {
             showErrorMessage();
         }
@@ -343,14 +376,5 @@ public class MainActivity extends AppCompatActivity implements MovieAdapterOnCli
                 null,
                 null,
                 MovieContract.MovieEntry.COLUMN_TIMESTAMP + " DESC");
-//        return mDb.query(
-//                MovieContract.MovieEntry.TABLE_NAME,
-//                null,
-//                null,
-//                null,
-//                null,
-//                null,
-//                MovieContract.MovieEntry.COLUMN_TIMESTAMP
-//        );
     }
 }
