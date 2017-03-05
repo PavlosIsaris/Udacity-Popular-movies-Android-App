@@ -19,12 +19,15 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.android.movies.adapters.ReviewAdapter;
 import com.example.android.movies.adapters.TrailerAdapter;
 import com.example.android.movies.db.MovieContract;
 import com.example.android.movies.db.MovieDbHelper;
 import com.example.android.movies.loaders.AsyncTaskLoaderCompleteListener;
+import com.example.android.movies.loaders.ReviewLoader;
 import com.example.android.movies.loaders.TrailerLoader;
 import com.example.android.movies.models.Movie;
+import com.example.android.movies.models.Review;
 import com.example.android.movies.models.Trailer;
 import com.example.android.movies.utilities.NetworkUtils;
 import com.squareup.picasso.Picasso;
@@ -34,7 +37,8 @@ import java.util.List;
 /**
  * This Activity is responsible for the clicked movie's details screen
  */
-public class DetailActivity extends AppCompatActivity implements TrailerAdapter.TrailerAdapterOnClickHandler, LoaderManager.LoaderCallbacks<List<Trailer>>, AsyncTaskLoaderCompleteListener<List<Trailer>>, View.OnClickListener {
+public class DetailActivity extends AppCompatActivity implements TrailerAdapter.TrailerAdapterOnClickHandler,
+        View.OnClickListener {
 
     private TextView mMovieTitleTextView;
     private ImageView mMovieImageView;
@@ -50,17 +54,24 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
 
     private ProgressBar mLoadingIndicator;
 
-    private RecyclerView mRecyclerView;
+    private RecyclerView mTrailersRecyclerView;
     private TrailerAdapter mTrailerAdapter;
 
+    private RecyclerView mReviewsRecyclerView;
+    private ReviewAdapter mReviewAdapter;
+
     private static final int TRAILERS_LOADER_ID = 1;
+    private static final int REVIEWS_LOADER_ID = 2;
 
     private boolean movieExistsInFavorites;
+
+    private Context mContext;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         initDB();
+        mContext = this;
         setContentView(R.layout.activity_detail);
         //get the data from the intent's extras
         Bundle data = getIntent().getExtras();
@@ -73,7 +84,9 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         mFavoriteMovieBtn.setOnClickListener(this);
         this.setUpMovieDetails(movie);
         this.setUpMovieTrailersUI();
+        this.setUpMovieReviewsUI();
     }
+
 
     private void initDB() {
         // Create a DB helper (this will create the DB if run for the first time)
@@ -121,12 +134,12 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
          * Using findViewById, we get a reference to our RecyclerView from xml. This allows us to
          * do things like set the adapter of the RecyclerView and toggle the visibility.
          */
-        mRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_movie_trailers);
+        mTrailersRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_movie_trailers);
 
         LinearLayoutManager layoutManager
                 = new LinearLayoutManager(this);
 
-        mRecyclerView.setLayoutManager(layoutManager);
+        mTrailersRecyclerView.setLayoutManager(layoutManager);
 
         /*
          * The MovieAdapter is responsible for linking our weather data with the Views that
@@ -135,46 +148,136 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         mTrailerAdapter = new TrailerAdapter(this);
 
         /* Setting the adapter attaches it to the RecyclerView in our layout. */
-        mRecyclerView.setAdapter(mTrailerAdapter);
+        mTrailersRecyclerView.setAdapter(mTrailerAdapter);
 
         this.loadTrailers();
     }
 
-    private void loadTrailers() {
-        int loaderId = TRAILERS_LOADER_ID;
-        LoaderManager.LoaderCallbacks<List<Trailer>> callback = DetailActivity.this;
+    private void setUpMovieReviewsUI() {
 
-        Bundle bundleForLoader = new Bundle();
-        bundleForLoader.putInt("movieId", mCurrentMovie.getId());
-        bundleForLoader.putString("path", "videos");
-        getSupportLoaderManager().initLoader(loaderId, bundleForLoader, callback);
+        mReviewsRecyclerView = (RecyclerView) findViewById(R.id.recyclerview_movie_reviews);
+
+        LinearLayoutManager layoutManager
+                = new LinearLayoutManager(this);
+
+        mReviewsRecyclerView.setLayoutManager(layoutManager);
+
+        /*
+         * The MovieAdapter is responsible for linking our weather data with the Views that
+         * will end up displaying our weather data.
+         */
+        mReviewAdapter = new ReviewAdapter();
+
+        /* Setting the adapter attaches it to the RecyclerView in our layout. */
+        mReviewsRecyclerView.setAdapter(mReviewAdapter);
+
+        this.loadReviews();
     }
+
+    private AsyncTaskLoaderCompleteListener<List<Trailer>> asyncTaskLoaderCompleteListenerTrailers = new AsyncTaskLoaderCompleteListener<List<Trailer>>() {
+        @Override
+        public void onTaskComplete(List<Trailer> data) {
+
+        }
+
+        @Override
+        public void onTaskInitialisation() {
+            mTrailersRecyclerView.setVisibility(View.INVISIBLE);
+            mLoadingIndicator.setVisibility(View.VISIBLE);
+        }
+    };
+
+    private AsyncTaskLoaderCompleteListener<List<Review>> asyncTaskLoaderCompleteListenerReviews = new AsyncTaskLoaderCompleteListener<List<Review>>() {
+        @Override
+        public void onTaskComplete(List<Review> data) {
+
+        }
+
+        @Override
+        public void onTaskInitialisation() {
+            mReviewsRecyclerView.setVisibility(View.INVISIBLE);
+            mLoadingIndicator.setVisibility(View.VISIBLE);
+        }
+    };
 
     @Override
     public void onClick(Trailer selectedTrailer) {
         startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.youtube.com/watch?v=" + selectedTrailer.getKey())));
     }
 
-    @Override
-    public Loader<List<Trailer>> onCreateLoader(int id, final Bundle args) {
-        return new TrailerLoader(this, this, args);
-    }
+    private LoaderManager.LoaderCallbacks<List<Trailer>> trailersResultLoaderListener
+            = new LoaderManager.LoaderCallbacks<List<Trailer>>() {
 
-    @Override
-    public void onLoadFinished(Loader<List<Trailer>> loader, List<Trailer> data) {
-        mLoadingIndicator.setVisibility(View.INVISIBLE);
-        if (data != null) {
-            showTrailersDataView();
-            mTrailerAdapter.setTrailersData(data);
-        } else {
-            showErrorMessage();
+
+        @Override
+        public Loader<List<Trailer>> onCreateLoader(int id, final Bundle args) {
+            return new TrailerLoader(mContext, asyncTaskLoaderCompleteListenerTrailers, args);
         }
+
+        @Override
+        public void onLoadFinished(Loader<List<Trailer>> loader, List<Trailer> data) {
+            mLoadingIndicator.setVisibility(View.INVISIBLE);
+            if (data != null) {
+                showTrailersDataView();
+                mTrailerAdapter.setTrailersData(data);
+            } else {
+                showErrorMessage();
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<List<Trailer>> loader) {
+
+        }
+
+    };
+
+    private LoaderManager.LoaderCallbacks<List<Review>> reviewsResultLoaderListener
+            = new LoaderManager.LoaderCallbacks<List<Review>>() {
+
+
+        @Override
+        public Loader<List<Review>> onCreateLoader(int id, final Bundle args) {
+            return new ReviewLoader(mContext, asyncTaskLoaderCompleteListenerReviews, args);
+        }
+
+        @Override
+        public void onLoadFinished(Loader<List<Review>> loader, List<Review> data) {
+            mLoadingIndicator.setVisibility(View.INVISIBLE);
+            if (data != null) {
+                showReviewsDataView();
+                mReviewAdapter.setReviewsData(data);
+            } else {
+                showErrorMessage();
+            }
+        }
+
+        @Override
+        public void onLoaderReset(Loader<List<Review>> loader) {
+
+        }
+
+    };
+
+    private void loadTrailers() {
+        int loaderId = TRAILERS_LOADER_ID;
+
+        Bundle bundleForLoader = new Bundle();
+        bundleForLoader.putInt("movieId", mCurrentMovie.getId());
+        bundleForLoader.putString("path", "videos");
+        getSupportLoaderManager().initLoader(loaderId, bundleForLoader, trailersResultLoaderListener);
     }
 
-    @Override
-    public void onLoaderReset(Loader<List<Trailer>> loader) {
+    private void loadReviews() {
+        int loaderId = REVIEWS_LOADER_ID;
 
+        Bundle bundleForLoader = new Bundle();
+        bundleForLoader.putInt("movieId", mCurrentMovie.getId());
+        bundleForLoader.putString("path", "reviews");
+        getSupportLoaderManager().initLoader(loaderId, bundleForLoader, reviewsResultLoaderListener);
     }
+
+
 
     /**
      * This method will make the View for the weather data visible and
@@ -187,7 +290,14 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
         /* First, make sure the error is invisible */
         mErrorMessageDisplay.setVisibility(View.INVISIBLE);
         /* Then, make sure the weather data is visible */
-        mRecyclerView.setVisibility(View.VISIBLE);
+        mTrailersRecyclerView.setVisibility(View.VISIBLE);
+    }
+
+    private void showReviewsDataView() {
+        /* First, make sure the error is invisible */
+        mErrorMessageDisplay.setVisibility(View.INVISIBLE);
+        /* Then, make sure the weather data is visible */
+        mReviewsRecyclerView.setVisibility(View.VISIBLE);
     }
 
     /**
@@ -199,20 +309,10 @@ public class DetailActivity extends AppCompatActivity implements TrailerAdapter.
      */
     private void showErrorMessage() {
         /* First, hide the currently visible data */
-        mRecyclerView.setVisibility(View.INVISIBLE);
+        mTrailersRecyclerView.setVisibility(View.INVISIBLE);
+        mReviewsRecyclerView.setVisibility(View.INVISIBLE);
         /* Then, show the error */
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
-    }
-
-    @Override
-    public void onTaskComplete(List<Trailer> data) {
-
-    }
-
-    @Override
-    public void onTaskInitialisation() {
-        mRecyclerView.setVisibility(View.INVISIBLE);
-        mLoadingIndicator.setVisibility(View.VISIBLE);
     }
 
     @Override

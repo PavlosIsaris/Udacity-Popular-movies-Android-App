@@ -95,21 +95,43 @@
                 android:layout_marginTop="20dp"
                 android:paddingStart="20sp"
                 android:paddingLeft="20sp"/>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="20sp"
-            android:background="@color/colorAccent"
-            android:layout_marginLeft="20sp"
-            android:layout_marginRight="20sp">
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/recyclerview_movie_trailers"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="185dp"
-                android:layout_marginTop="10dp"
-                android:gravity="center"/>
-        </LinearLayout>
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20sp"
+                android:background="@color/colorAccent"
+                android:layout_marginLeft="20sp"
+                android:layout_marginRight="20sp">
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/recyclerview_movie_trailers"
+                    android:layout_width="match_parent"
+                    android:layout_height="185dp"
+                    android:layout_marginTop="10dp"
+                    android:gravity="center"/>
+            </LinearLayout>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/reviewsTitle"
+                android:layout_marginTop="40dp"
+                android:paddingStart="20sp"
+                android:paddingLeft="20sp"/>
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="20sp"
+                android:background="@color/colorAccent"
+                android:layout_marginLeft="20sp"
+                android:layout_marginRight="20sp">
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/recyclerview_movie_reviews"
+                    android:layout_width="match_parent"
+                    android:layout_height="185dp"
+                    android:layout_marginTop="10dp"
+                    android:gravity="center"/>
+            </LinearLayout>
             <TextView
                 android:id="@+id/tv_trailers_error_message_display"
                 android:layout_width="wrap_content"

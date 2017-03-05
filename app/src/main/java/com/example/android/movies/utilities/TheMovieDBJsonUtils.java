@@ -18,6 +18,7 @@ package com.example.android.movies.utilities;
 import android.content.Context;
 
 import com.example.android.movies.models.Movie;
+import com.example.android.movies.models.Review;
 import com.example.android.movies.models.Trailer;
 
 import org.json.JSONArray;
@@ -84,7 +85,7 @@ public final class TheMovieDBJsonUtils {
         return parsedMovieData;
     }
 
-    public static List<Trailer> getTrailerObjectsFromJson(Context context, String moviesJsonStr)
+    public static List<Trailer> getTrailerObjectsFromJson(Context context, String trailersJsonStr)
             throws JSONException {
 
         /* Weather information. Each day's settings info is an element of the "list" array */
@@ -98,7 +99,7 @@ public final class TheMovieDBJsonUtils {
         /* String array to hold each day's weather String */
         List<Trailer> parsedTrailerData;
 
-        JSONObject trailerJson = new JSONObject(moviesJsonStr);
+        JSONObject trailerJson = new JSONObject(trailersJsonStr);
 
         JSONArray trailerArray = trailerJson.getJSONArray(MOVIE_LIST);
 
@@ -118,5 +119,40 @@ public final class TheMovieDBJsonUtils {
         }
 
         return parsedTrailerData;
+    }
+
+    public static List<Review> getReviewObjectsFromJson(Context context, String reviewsJsonStr)
+            throws JSONException {
+
+        final String MOVIE_LIST = "results";
+
+        final String REVIEW_ID = "id";
+        final String REVIEW_AUTHOR = "author";
+        final String REVIEW_CONTENT = "content";
+        final String REVIEW_URL = "url";
+
+        /* String array to hold each day's weather String */
+        List<Review> parsedReviewData;
+
+        JSONObject reviewJson = new JSONObject(reviewsJsonStr);
+
+        JSONArray reviewsArray = reviewJson.getJSONArray(MOVIE_LIST);
+
+        parsedReviewData = new ArrayList<>();
+
+        for (int i = 0; i < reviewsArray.length(); i++) {
+
+            /* Get the JSON object representing the current movie */
+            JSONObject movieJSONObj = reviewsArray.getJSONObject(i);
+
+            String reviewId = movieJSONObj.getString(REVIEW_ID);
+            String reviewAuthor = movieJSONObj.getString(REVIEW_AUTHOR);
+            String reviewContent = movieJSONObj.getString(REVIEW_CONTENT);
+            String reviewUrl = movieJSONObj.getString(REVIEW_URL);
+            //add to the data list a new Movie instance
+            parsedReviewData.add(i, new Review(reviewId, reviewAuthor, reviewContent, reviewUrl));
+        }
+
+        return parsedReviewData;
     }
 }

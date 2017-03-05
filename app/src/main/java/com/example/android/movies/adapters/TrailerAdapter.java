@@ -83,7 +83,7 @@ public class TrailerAdapter extends RecyclerView.Adapter<TrailerAdapter.TrailerA
      * @param position                  The position of the item within the adapter's data set.
      */
     @Override
-    public void onBindViewHolder(TrailerAdapter.TrailerAdapterViewHolder trailerAdapterViewHolder, int position) {
+    public void onBindViewHolder(TrailerAdapterViewHolder trailerAdapterViewHolder, int position) {
         String trailerName = mTrailerData.get(position).getName();
         trailerAdapterViewHolder.mTrailerNameBtn.setText(trailerName);
         //Picasso.with(this.context).load(NetworkUtils.MOVIES_POSTER_BASE_URL + "w185/" + moviePoster).into(trailerAdapterViewHolder.mTrailerName);
